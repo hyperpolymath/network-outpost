@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# core-network-outpost — a reproducible, dependability-first home-network estate
+# network-outpost — a reproducible, dependability-first home-network estate
 
 > **Tested devices:** a community-led list of tested versions lives on the
 > **[wiki → Tested devices](https://github.com/hyperpolymath/core-network-outpost/wiki/Tested-Devices)**.
