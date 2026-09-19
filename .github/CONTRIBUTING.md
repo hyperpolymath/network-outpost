@@ -1,24 +1,33 @@
 # Clone the repository
 
-git clone <https://github.com/hyperpolymath/network-outpost.git> cd
-network-outpost
+```sh
+git clone https://github.com/hyperpolymath/network-outpost.git
+cd network-outpost
+```
 
 # Using Nix (recommended for reproducibility)
 
+```sh
 nix develop
+```
 
 # Or using toolbox/distrobox
 
-toolbox create network-outpost-dev toolbox enter network-outpost-dev \#
-Install dependencies manually
+```sh
+toolbox create network-outpost-dev
+toolbox enter network-outpost-dev
+# Install dependencies manually
+```
 
 # Verify setup
 
-just check \# or: cargo check / mix compile / etc. just test \# Run test
-suite
+```sh
+just check # or: cargo check / mix compile / etc.
+just test # Run test suite
+```
 
 
-    ### Repository Structure
+### Repository Structure
 
 network-outpost/ ├── src/ \# Source code (Perimeter 1-2) ├── lib/ \#
 Library code (Perimeter 1-2) ├── extensions/ \# Extensions (Perimeter 2)
@@ -28,63 +37,65 @@ specs (Perimeter 2) │ └── proposals/ \# RFCs (Perimeter 3) ├── exa
 \# Examples (Perimeter 3) ├── spec/ \# Spec tests (Perimeter 3) ├──
 tests/ \# Test suite (Perimeter 2-3) ├── .well-known/ \# Protocol files
 (Perimeter 1-3) ├── .github/ \# GitHub config (Perimeter 1) │ ├──
-ISSUE_TEMPLATE/ │ └── workflows/ ├── CHANGELOG.md ├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md \# This file ├── GOVERNANCE.md ├── LICENSE ├──
+CONTRIBUTING.md \# This file │ ├── ISSUE_TEMPLATE/ │ └── workflows/ ├──
+CHANGELOG.md ├── CODE_OF_CONDUCT.md ├── GOVERNANCE.md ├── LICENSE ├──
 MAINTAINERS.md ├── README.adoc ├── SECURITY.md ├── flake.nix \# Nix
 flake (Perimeter 1) └── Justfile \# Task runner (Perimeter 1)
 
 
-    ---
+---
 
-    ## How to Contribute
+## How to Contribute
 
-    ### Reporting Bugs
+### Reporting Bugs
 
-    **Before reporting**:
-    1. Search existing issues
-    2. Check if it's already fixed in `main`
-    3. Determine which perimeter the bug affects
+**Before reporting**:
 
-    **When reporting**:
+1. Search existing issues
+2. Check if it's already fixed in `main`
+3. Determine which perimeter the bug affects
 
-    Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md) and include:
+**When reporting**:
 
-    - Clear, descriptive title
-    - Environment details (OS, versions, toolchain)
-    - Steps to reproduce
-    - Expected vs actual behaviour
-    - Logs, screenshots, or minimal reproduction
+Use the [bug report template](ISSUE_TEMPLATE/bug_report.md) and include:
 
-    ### Suggesting Features
+- Clear, descriptive title
+- Environment details (OS, versions, toolchain)
+- Steps to reproduce
+- Expected vs actual behaviour
+- Logs, screenshots, or minimal reproduction
 
-    **Before suggesting**:
-    1. Check the [roadmap](ROADMAP.md) if available
-    2. Search existing issues and discussions
-    3. Consider which perimeter the feature belongs to
+### Suggesting Features
 
-    **When suggesting**:
+**Before suggesting**:
 
-    Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md) and include:
+1. Check the [roadmap](ROADMAP.md) if available
+2. Search existing issues and discussions
+3. Consider which perimeter the feature belongs to
 
-    - Problem statement (what pain point does this solve?)
-    - Proposed solution
-    - Alternatives considered
-    - Which perimeter this affects
+**When suggesting**:
 
-    ### Your First Contribution
+Use the [feature request template](ISSUE_TEMPLATE/feature_request.md) and include:
 
-    Look for issues labelled:
+- Problem statement (what pain point does this solve?)
+- Proposed solution
+- Alternatives considered
+- Which perimeter this affects
 
-    - [`good first issue`](https://github.com/hyperpolymath/network-outpost/labels/good%20first%20issue) — Simple Perimeter 3 tasks
-    - [`help wanted`](https://github.com/hyperpolymath/network-outpost/labels/help%20wanted) — Community help needed
-    - [`documentation`](https://github.com/hyperpolymath/network-outpost/labels/documentation) — Docs improvements
-    - [`perimeter-3`](https://github.com/hyperpolymath/network-outpost/labels/perimeter-3) — Community sandbox scope
+### Your First Contribution
 
-    ---
+Look for issues labelled:
 
-    ## Development Workflow
+- [`good first issue`](https://github.com/hyperpolymath/network-outpost/labels/good%20first%20issue) — Simple Perimeter 3 tasks
+- [`help wanted`](https://github.com/hyperpolymath/network-outpost/labels/help%20wanted) — Community help needed
+- [`documentation`](https://github.com/hyperpolymath/network-outpost/labels/documentation) — Docs improvements
+- [`perimeter-3`](https://github.com/hyperpolymath/network-outpost/labels/perimeter-3) — Community sandbox scope
 
-    ### Branch Naming
+---
+
+## Development Workflow
+
+### Branch Naming
 
 docs/short-description \# Documentation (P3) test/what-added \# Test
 additions (P3) feat/short-description \# New features (P2)
@@ -92,11 +103,11 @@ fix/issue-number-description \# Bug fixes (P2) refactor/what-changed \#
 Code improvements (P2) security/what-fixed \# Security fixes (P1-2)
 
 
-    ### Commit Messages
+### Commit Messages
 
-    We follow [Conventional Commits](https://www.conventionalcommits.org/):
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-():
+type(scope): description
 
 \[optional body\]
 
