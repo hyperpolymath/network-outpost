@@ -1,0 +1,223 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= AFFIRMATION — network-outpost, as of 2026-10-07
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+:status: DRAFT — agent-authored, NOT affirmed by the owner
+:toc:
+:icons: font
+
+[WARNING]
+====
+*DRAFT.* An AI agent wrote this file and did not commit it. It becomes an
+affirmation only when the owner lands it with a signed commit whose parent is
+the anchor SHA below
+(`a90a71a29a9412e05c67d8de62c93d26bc757646`). Until then, read it as a draft.
+====
+
+== What this is, and how it works
+
+network-outpost is a configuration-as-code home-network estate. The Core box
+runs AdGuard Home in a digest-pinned Podman container, an `nftables`
+default-deny firewall, chrony, CUPS and dynamic DNS. An optional Frontier box
+adds shaping and exposed services. The repository holds POSIX shell scripts,
+`nftables` rulesets, systemd units, a compose file, one image pin
+(`images.lock`) and documentation. There is no compiled program and no test
+suite. The evidence in this file is therefore static: shell syntax and lint,
+`nftables` syntax checks, the repo's own doc-link checker, and a live
+re-resolution of the image pin against Docker Hub.
+
+== The epistemic contract
+
+You may conclude that, at the anchor commit and at the stated time, each
+command below produced the stated exit code and count on the stated toolchain.
+
+You may *not* conclude that the estate boots, that the firewall behaves
+correctly on a live host, that AdGuard Home blocks anything, or that the
+shaper keeps latency down. None of that was exercised. No container was
+started, no ruleset was loaded into a live kernel, and no hardware was used.
+
+== Verifiable anchor
+
+[cols="1,3", options="header"]
+|===
+| Field | Value
+
+| Repo
+| `hyperpolymath/network-outpost` (its docs call it `core-network-outpost`;
+  see the cross-check section)
+
+| Branch
+| `main` (worktree branch `docs/affirmation-2026-10-07` at `origin/main`)
+
+| Commit (HEAD)
+| `a90a71a29a9412e05c67d8de62c93d26bc757646`
+
+| Permalink
+| https://github.com/hyperpolymath/network-outpost/tree/a90a71a29a9412e05c67d8de62c93d26bc757646
+
+| Verified (UTC)
+| 2026-10-07T10:52:21Z (first check) to 2026-10-07T10:53:25Z (last check)
+
+| Working-tree delta at verification
+| `clean`. `git status --porcelain` was empty before and after the checks.
+
+| Toolchain
+| dash 0.5.12-12 (`/bin/sh`), GNU bash 5.2.37, ShellCheck 0.11.0,
+  nftables v1.1.3, util-linux `unshare` 2.41.5, curl 8.14.1,
+  actionlint 1.7.7, git 2.47.3. Debian 13 on WSL2.
+|===
+
+[IMPORTANT]
+====
+If you are reading this at a later commit, the claims may have drifted. Re-run
+the reproduction steps and write a fresh affirmation; do not trust a stale one.
+The live pin check in particular depends on Docker Hub at the time of the run.
+====
+
+== Companion documents and repo metadata (cross-check)
+
+* `README.adoc` and `docs/EXPLAINME.adoc`: the map and the plain-language
+  account. Both cite `docs/*.md` files that do not exist (the docs are
+  `.adoc`); see *Outstanding* below.
+* `docs/DOCS-MAP.adoc`: states the reference convention that
+  `bin/check-doc-links.sh` enforces.
+* `images.lock`: the single committed image pin.
+* `GOVERNANCE.adoc`: the maintainer-gated bump policy that `bin/bump.sh` and
+  `bin/canary.sh` implement.
+* The docs and wiki links name the repository `core-network-outpost`
+  (7 `.adoc` mentions). The GitHub repository is `network-outpost`. This file
+  makes no claim about whether GitHub redirects that name.
+
+== The honest state (one breath)
+
+The shell scripts parse and the three `nftables` rulesets pass `nft -c`. The
+image pin still resolves at source, and a newer upstream release exists. The
+repo's own doc-link gate fails: it reports 33 dead references.
+
+=== What is solid (and how we checked)
+
+[cols="2,3,1", options="header"]
+|===
+| Claim | Command | Result
+
+| All 12 shell scripts (`.sh` and shell `.in` templates with a shebang) parse
+| `sh -n` per file, `bash -n` for the 4 with a bash shebang
+| 12 files, 0 errors
+
+| ShellCheck reports no errors
+| `shellcheck -f gcc <the 12 files>`
+| exit 1; 0 errors, 6 warnings, 4 notes
+
+| The three `nftables` rulesets are syntactically valid
+| `unshare -rn nft -c -f <file>` for `host/nftables.nft`,
+  `edge-shaper/nftables.nft`, `edge-shaper/monitoring-internal-only.nft`
+| 3 of 3 exit 0
+
+| The `nft -c` check can fail
+| Same command on a scratch copy of `host/nftables.nft` with
+  `policy drop` changed to `policy dorp` (2 occurrences)
+| exit 1 (planted control)
+
+| Inbound and forwarded traffic default to drop
+| `grep -nE 'policy' host/nftables.nft edge-shaper/nftables.nft`
+| `input` and `forward` are `policy drop` in both files (4 chains);
+  `output` is `policy accept`
+
+| The AdGuard Home pin still matches its source
+| `sh bin/bump.sh --verify`
+| exit 0: `v0.107.77` still resolves to `sha256:e6f2b8bc...6d890`
+
+| `--verify` detects drift
+| `bin/bump.sh --verify` run from a scratch copy whose `images.lock` had the
+  digest's first 12 hex digits replaced with zeros
+| exit 1, `DRIFT` reported (planted control)
+|===
+
+=== The honest nuance you must not lose
+
+* `nft -c` checks syntax and kernel acceptance inside an unprivileged user and
+  network namespace. It does not prove the rules do what the comments say.
+  Without `unshare -rn`, `nft -c` exits 1 with `Operation not permitted`. That
+  failure is a missing privilege, not a ruleset error.
+* Five of the 6 ShellCheck warnings are SC1007 on the `CDPATH= cd` idiom,
+  which is deliberate. The sixth is SC2164 (`cd` without `|| exit`) in
+  `bin/canary.sh` line 22. The 4 notes are SC1091: ShellCheck did not follow
+  sourced files (`.env`, `images.lock`, `/etc/outpost/canary.env`).
+* `bin/bump.sh --verify` asks the registry over the network. It is a claim
+  about Docker Hub at 2026-10-07T10:5xZ, not a property of the commit.
+
+=== Known-incomplete but honestly fenced
+
+* `bin/bump.sh --check` exits 10 ("upgrade available"): upstream offers
+  `v0.107.79` (`sha256:aba9e3bf...074f0`) against the pinned `v0.107.77`.
+  The design applies upgrades only through a maintainer-confirmed
+  `--apply`, so this is reported, not applied.
+* `bin/up.sh`, the compose file and the systemd units were not run. They
+  start containers or change host state.
+
+=== Outstanding / weak / refuted (no spin)
+
+* *The repo's own doc-link gate fails.* `sh bin/check-doc-links.sh` exits 1
+  and reports 33 dead references: 15 file-relative links and 18 root-relative
+  prose mentions. Almost all point at `docs/*.md` or `.github/GOVERNANCE.md`
+  names left over from a `.md` to `.adoc` rename. The files that carry them
+  include `README.adoc` (6), `docs/DOCS-MAP.adoc` (6), `SECURITY.adoc` (4)
+  and `.github/CONTRIBUTING.md` (3). The README's reference list links
+  to `docs/ARCHITECTURE.md`, `docs/HARDWARE.md` and four more `.md` files
+  that do not exist.
+* `actionlint .github/workflows/*.yml` exits 1 with 1 finding: ShellCheck
+  SC2086 (info, unquoted expansion) in the `run:` block of `pages.yml`
+  line 35.
+* `mise.toml` declares `python`, `deno`, `node`, `go`, `java`, `npm`,
+  `yarn`, `pnpm`, `black` and `ruff`. The estate bans Python and Deno and
+  prefers Bun. The repo contains no code in any of those languages, so the
+  declarations are inert, but they contradict estate policy.
+* No test suite exists. Nothing here exercises runtime behaviour.
+
+== Reproduce it yourself
+
+Run from the repository root at the anchor commit.
+
+[source,bash]
+----
+sh bin/check-doc-links.sh; echo "rc=$?"     # expect rc=1, 33 dead refs
+for f in bin/*.sh dependability/*.sh edge-shaper/*.sh host/setup.sh \
+         host/ddns/*.sh host/ddns/*.in host/canary/*.in; do
+  if head -1 "$f" | grep -q bash; then sh_=bash; else sh_=sh; fi
+  "$sh_" -n "$f" || echo "BAD $f"           # expect no BAD lines
+done
+shellcheck -f gcc bin/*.sh dependability/*.sh edge-shaper/*.sh \
+  host/setup.sh host/ddns/*.sh host/ddns/*.in host/canary/*.in
+                                            # expect 6 warnings, 4 notes
+for f in host/nftables.nft edge-shaper/nftables.nft \
+         edge-shaper/monitoring-internal-only.nft; do
+  unshare -rn nft -c -f "$f"; echo "$f rc=$?"   # expect rc=0 each
+done
+sh bin/bump.sh --verify; echo "rc=$?"       # expect rc=0 (network)
+sh bin/bump.sh --check;  echo "rc=$?"       # rc=10 while v0.107.79 is newest
+actionlint .github/workflows/*.yml          # expect 1 SC2086 info
+----
+
+== One-line characterisation (quote this)
+
+At `a90a71a2`, network-outpost's 12 shell scripts parse, its 3 `nftables`
+rulesets pass `nft -c`, and its image pin re-verifies at source; its own
+doc-link check fails with 33 dead references, and nothing at runtime was
+exercised.
+
+== Joint attestation
+
+*Engineering party (AI).* `claude-opus-5-5` ran every command in this file
+between 2026-10-07T10:52:21Z and 2026-10-07T10:53:25Z, in a git worktree
+checked out at the anchor commit. The wording above is a faithful report of
+those runs. No claim was copied from an earlier document.
+
+*Owner / maintainer.* Jonathan D.A. Jewell signs by landing this file:
+
+[source,bash]
+----
+git commit -S -s -m "docs: affirm state at a90a71a2"
+git log --show-signature -1
+----
+
+The affirmation is anchored only if the parent of that commit is
+`a90a71a29a9412e05c67d8de62c93d26bc757646` and the signature verifies.
